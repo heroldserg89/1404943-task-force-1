@@ -9,19 +9,19 @@ class Task
     public const string STATUS_IN_PROGRESS = 'status_in_progress'; // Заказчик выбрал исполнителя для задания
     public const string STATUS_FAILED = 'status_failed'; // Исполнитель отказался от выполнения задания
     public const string STATUS_DONE = 'status_done';  // Заказчик отметил задание как выполненное
-    public const string ACTION_CANCEL = 'action_cancel';  //  Действие при отмене задания заказчиком
+    public const string ACTION_CANCELED = 'action_cancel';  //  Действие при отмене задания заказчиком
     public const string ACTION_RESPOND = 'action_respond'; // Действие при отклике на задание исполнителем
     public const string ACTION_START = 'action_start'; // Действие при начале выполнения задания
     public const string ACTION_REJECT = 'action_reject'; // Действие при отмене задания исполнителем
     public const string ACTION_DONE = 'action_done'; // Действие принятия задания
-    private int $customerID;
-    private ?int $executorID;
+    private int $customerId;
+    private ?int $executorId;
     private string $currentStatus;
 
     public function __construct(int $customerID, ?int $executorID = null)
     {
-        $this->customerID = $customerID;
-        $this->executorID = $executorID;
+        $this->customerId = $customerID;
+        $this->executorId = $executorID;
         $this->currentStatus = self::STATUS_NEW;
     }
 
@@ -44,7 +44,7 @@ class Task
     public function getActionsMap(): array
     {
         return [
-            self::ACTION_CANCEL => 'Отменить',
+            self::ACTION_CANCELED => 'Отменить',
             self::ACTION_DONE => 'Завершить задание',
             self::ACTION_RESPOND => 'Откликнуться на задание',
             self::ACTION_REJECT => 'Отказаться от задания',
@@ -55,7 +55,7 @@ class Task
     public function getNextStatus(string $action): ?string
     {
         return match ($action) {
-            self::ACTION_CANCEL => self::STATUS_CANCEL,
+            self::ACTION_CANCELED => self::STATUS_CANCEL,
             self::ACTION_DONE => self::STATUS_DONE,
             self::ACTION_REJECT => self::STATUS_FAILED,
             self::ACTION_START => self::STATUS_IN_PROGRESS,
@@ -66,7 +66,7 @@ class Task
     public function getAvailableActions(string $status): array
     {
         return match ($status) {
-            self::STATUS_NEW => [self::ACTION_CANCEL, self::ACTION_RESPOND, self::ACTION_START],
+            self::STATUS_NEW => [self::ACTION_CANCELED, self::ACTION_RESPOND, self::ACTION_START],
             self::STATUS_IN_PROGRESS => [self::ACTION_DONE, self::ACTION_REJECT],
             default => [],
         };
@@ -93,13 +93,13 @@ class Task
         return true;
     }
 
-    public function getCustomerID(): int
+    public function getCustomerId(): int
     {
-        return $this->customerID;
+        return $this->customerId;
     }
 
-    public function getExecutorID(): ?int
+    public function getExecutorId(): ?int
     {
-        return $this->executorID;
+        return $this->executorId;
     }
 }
