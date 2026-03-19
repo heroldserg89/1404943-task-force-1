@@ -1,7 +1,10 @@
 <?php
 
+namespace Tests;
+
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
 use TaskForce\Task;
 
 class TaskTest extends TestCase
@@ -48,7 +51,7 @@ class TaskTest extends TestCase
         $actionsMap = $task->getActionsMap();
 
         $expectedActions = [
-            Task::ACTION_CANCEL => 'Отменить',
+            Task::ACTION_CANCELED => 'Отменить',
             Task::ACTION_DONE => 'Завершить задание',
             Task::ACTION_RESPOND => 'Откликнуться на задание',
             Task::ACTION_REJECT => 'Отказаться от задания',
@@ -70,7 +73,7 @@ class TaskTest extends TestCase
     public static function actionToStatusProvider(): array
     {
         return [
-            'cancel action leads to cancel status' => [Task::ACTION_CANCEL, Task::STATUS_CANCEL],
+            'cancel action leads to cancel status' => [Task::ACTION_CANCELED, Task::STATUS_CANCEL],
             'done action leads to done status' => [Task::ACTION_DONE, Task::STATUS_DONE],
             'reject action leads to failed status' => [Task::ACTION_REJECT, Task::STATUS_FAILED],
             'start action leads to in progress status' => [Task::ACTION_START, Task::STATUS_IN_PROGRESS],
@@ -92,7 +95,7 @@ class TaskTest extends TestCase
         return [
             'new status allows cancel, respond, start' => [
                 Task::STATUS_NEW,
-                [Task::ACTION_CANCEL, Task::ACTION_RESPOND, Task::ACTION_START]
+                [Task::ACTION_CANCELED, Task::ACTION_RESPOND, Task::ACTION_START]
             ],
             'in progress allows done, reject' => [
                 Task::STATUS_IN_PROGRESS,
@@ -105,8 +108,11 @@ class TaskTest extends TestCase
     }
 
     #[DataProvider('successfulApplyActionProvider')]
-    public function testApplyActionSuccessfullyChangesStatus(string $initialStatus, string $action, string $expectedStatus): void
-    {
+    public function testApplyActionSuccessfullyChangesStatus(
+        string $initialStatus,
+        string $action,
+        string $expectedStatus
+    ): void {
         $task = $this->createTaskWithReflection($initialStatus);
 
         $result = $task->applyAction($action);
@@ -118,7 +124,7 @@ class TaskTest extends TestCase
     public static function successfulApplyActionProvider(): array
     {
         return [
-            'cancel action on new status' => [Task::STATUS_NEW, Task::ACTION_CANCEL, Task::STATUS_CANCEL],
+            'cancel action on new status' => [Task::STATUS_NEW, Task::ACTION_CANCELED, Task::STATUS_CANCEL],
             'start action on new status' => [Task::STATUS_NEW, Task::ACTION_START, Task::STATUS_IN_PROGRESS],
             'done action on in progress' => [Task::STATUS_IN_PROGRESS, Task::ACTION_DONE, Task::STATUS_DONE],
             'reject action on in progress' => [Task::STATUS_IN_PROGRESS, Task::ACTION_REJECT, Task::STATUS_FAILED],
@@ -151,12 +157,12 @@ class TaskTest extends TestCase
         return [
             'done action on new status' => [Task::STATUS_NEW, Task::ACTION_DONE],
             'reject action on new status' => [Task::STATUS_NEW, Task::ACTION_REJECT],
-            'cancel action on in progress' => [Task::STATUS_IN_PROGRESS, Task::ACTION_CANCEL],
+            'cancel action on in progress' => [Task::STATUS_IN_PROGRESS, Task::ACTION_CANCELED],
             'start action on in progress' => [Task::STATUS_IN_PROGRESS, Task::ACTION_START],
             'respond action on in progress' => [Task::STATUS_IN_PROGRESS, Task::ACTION_RESPOND],
             'unknown action on new status' => [Task::STATUS_NEW, 'unknown_action'],
             'unknown action on in progress' => [Task::STATUS_IN_PROGRESS, 'unknown_action'],
-            'action on failed status' => [Task::STATUS_FAILED, Task::ACTION_CANCEL],
+            'action on failed status' => [Task::STATUS_FAILED, Task::ACTION_CANCELED],
             'action on done status' => [Task::STATUS_DONE, Task::ACTION_DONE],
             'action on cancel status' => [Task::STATUS_CANCEL, Task::ACTION_START],
         ];
